@@ -1,5 +1,6 @@
 class Man:
-	def __init__(self, name):
+	def __init__(self, id, name):
+		self.id = id
 		self.name = name
 		
 class Woman:
@@ -7,6 +8,7 @@ class Woman:
 		self.id = id
 		self.name = name
 		self.prefs = {}
+		self.man = None
 	
 	def prefers(self, suitor):
 		return self.man is None or self.prefs[suitor.id] < self.prefs[self.man.id]
@@ -20,12 +22,15 @@ def solve(men, women):
 	while len(men) > 0:
 		man = men.pop()
 		woman = women[man.prefs.pop()]
-		woman.prefers(man) 
-			? woman.accept(man, men) 
-			: men.push(man)
+		if woman.prefers(man):
+			woman.accept(man, men) 
+		else: 
+			men.append(man)
 
-	for n in women:
-		print women[n].man.name + " -- " + women[n].name
+	w_list = women.values()
+	w_list.sort(key=lambda x: x.man.id, reverse=False)
+	for w in w_list:
+		print w.man.name + " -- " + w.name
 
 def parse(filename):
 	men = {}
@@ -50,7 +55,7 @@ def parse_person(line, men, women):
 	if index % 2 == 0:
 		women[index] = Woman(index, name)
 	else:
-		men[index] = Man(name)
+		men[index] = Man(index, name)
 
 def parse_prefs(line, men, women):
 	split = line.split(':')
@@ -70,4 +75,5 @@ def set_woman_prefs(woman, line):
 	for value, index in enumerate(arr):
 		woman.prefs[index] = value
 
-solve(parse('data/stable-marriage-friends.in'))
+[men, women] = parse('data/stable-marriage-worst-500.in')
+solve(men, women)
