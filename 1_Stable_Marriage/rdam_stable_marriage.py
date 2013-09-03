@@ -71,10 +71,11 @@ def print_output(pairs, output):
             for (husband, wife) in pairs:
                 output_file.write(husband.name + " -- " + wife.name + "\n")
 
-women, men = parse_file(sys.argv[1])
-pairs = Gale_Shapley(women, men)
+def GSsolve(input_file,output):
+    women, men = parse_file(input_file)
+    pairs = Gale_Shapley(women, men)
+    print_output(pairs, output)
 
-output = None if len(sys.argv) != 3 else sys.argv[2]
-print_output(pairs, output)
-
-
+if __name__ == "__main__":
+    output = None if len(sys.argv) != 3 else sys.argv[2]
+    GSsolve(sys.argv[1], output)
