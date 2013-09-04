@@ -1,4 +1,4 @@
-import sys,re,time
+import sys,re
 
 def parse_data():
 	data = sys.stdin.read().splitlines()
