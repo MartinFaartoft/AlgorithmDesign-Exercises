@@ -25,34 +25,57 @@ class Woman:
         else:
             return suitor
 
-# Parsing
-with open(sys.argv[1], 'r') as file:
-    names, preferences, women, bachelors = {}, {}, {}, []
+def parse_file(inputfile):
+    names, preferences, women, men = {}, {}, {}, []
     name_pattern = re.compile("^\d+ ")
     pref_pattern = re.compile("^\d+:")
+    with open(inputfile, 'r') as input_file:
+        for line in input_file:
+            if name_pattern.match(line):
+                lineList = line.split()
+                names[int(lineList[0])] = lineList[1].strip()
+            elif pref_pattern.match(line):
+                lineList = line.split(': ')
+                preferences[int(lineList[0])] = lineList[1].strip().split()
 
-    for line in file:
-        if name_pattern.match(line):
-            lineList = line.split()
-            names[int(lineList[0])] = lineList[1].strip()
-        elif pref_pattern.match(line):
-            lineList = line.split(': ')
-            preferences[int(lineList[0])] = lineList[1].strip().split()
+        for id in names.keys():
+            if id % 2 == 0:
+                women[id] = Woman(names[id], preferences[id])
+            else:
+                men.append(Man(id, names[id], preferences[id]))
+    return women, men
 
-    for id in names.keys():
-        if id % 2 == 0:
-            women[id] = Woman(names[id], preferences[id])
-        else:
-            bachelors.append(Man(id, names[id], preferences[id]))
+def Gale_Shapley(women, bachelors):
+    while bachelors:
+        bachelor = bachelors.pop()
+        womanID = bachelor.preferences.pop()
+        new_bachelor = women[womanID].proposed_to_by(bachelor)
 
-#Actual algorithm
-while bachelors:
-    bachelor = bachelors.pop()
-    womanID = bachelor.preferences.pop()
-    new_bachelor = women[womanID].proposed_to_by(bachelor)
+        if new_bachelor is not None:
+            bachelors.append(new_bachelor)
 
-    if new_bachelor is not None:
-        bachelors.append(new_bachelor)
+    # Create pairs
+    pairs = []
+    for woman in women.values():
+        pairs.append((woman.husband, woman))
 
-for woman in women.values():
-    print woman.husband.name + " -- " + woman.name
+    return pairs
+
+def print_output(pairs, output):
+    pairs = sorted(pairs, key=lambda (husband, wife): husband.id)
+    if output is None:  # If no output file is given, print to std.out
+        for (husband, wife) in pairs:
+            print husband.name + " -- " + wife.name
+    else:
+        with open(output, 'w') as output_file:
+            for (husband, wife) in pairs:
+                output_file.write(husband.name + " -- " + wife.name + "\n")
+
+def GSsolve(input_file,output):
+    women, men = parse_file(input_file)
+    pairs = Gale_Shapley(women, men)
+    print_output(pairs, output)
+
+if __name__ == "__main__":
+    output = None if len(sys.argv) != 3 else sys.argv[2]
+    GSsolve(sys.argv[1], output)
