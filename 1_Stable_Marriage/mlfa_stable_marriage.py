@@ -31,8 +31,7 @@ def solve(men, women):
 		else: 
 			men.append(man)
 
-	w_list = sorted(women.values(), key=lambda x: x.man.id)
-	for w in w_list:
+	for w in sorted(women.values(), key=lambda x: x.man.id):
 		print w.man.name + " -- " + w.name
 
 def parse(filename):
@@ -56,6 +55,7 @@ def parse_person(split, men, women):
 		men[index] = Man(index, name)
 
 def parse_prefs(split, men, women):
+	print(split)
 	prefs = split[-1].strip()
 	index = int(split[0])
 	if(index % 2 == 0):
