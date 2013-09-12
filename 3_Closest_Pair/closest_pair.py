@@ -74,9 +74,6 @@ print closest_pair(points)
 
 
 
-print "FRI FRI FRI"
-
-
 a = Point(8.0,0, "a")
 b = Point(3.0,0, "b")
 c = Point(6.0,0, "c")
