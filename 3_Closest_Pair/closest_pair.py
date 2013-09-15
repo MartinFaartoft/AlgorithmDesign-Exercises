@@ -14,6 +14,19 @@ class Point(object):
 	def __repr__(self):
 		return self.id + ' - ' + str(self.x) + " , " + str(self.y) + "\r\n"
 
+class Pair:
+	def __init__(self, p1, p2, dist):
+		self.p1 = p1
+		self.p2 = p2
+		self.dist = dist
+
+	def __repr__(self):
+		return str(self.dist)
+
+def smallest_pair(a, b):
+	return a if a.dist < b.dist else b
+
+
 def parse_data():
 	data = sys.stdin.read().splitlines()[6:-1]
 	points = []
@@ -26,58 +39,38 @@ def parse_data():
 		points.append(Point(b,c,a))
 	return sorted(points, key=lambda p: p.x)
 
+def brute_force(points):
+	min_pair = Pair(None, None, float('inf'))
+	for i, point_a in enumerate(points):
+		for j in range(i+1, len(points)):
+			point_b = points[j]
+			dist = point_a.distance(point_b)
+			if (dist < min_pair.dist):
+				min_pair = Pair(point_a, point_b, dist)
+	return min_pair
+
 def closest_pair(points):
 	if (len(points) < 4):
+		return brute_force(points)
 
-		min_dist = float('inf')
-		for i, point_a in enumerate(points):
-			for j in range(i+1, len(points)):
-				point_b = points[j]
-				dist = point_a.distance(point_b)
-				if (dist < min_dist):
-					min_point_a = point_a
-					min_point_b = point_b
-					min_dist = dist
-		return (min_point_a, min_point_b, min_dist)
+	mid_index = len(points) / 2 
+	left = points[:mid_index]
+	right = points[mid_index:]
 
-	mid = len(points) / 2 
-	left = points[:mid]
-	right = points[mid:]
+	left_pair = closest_pair(left)
+	right_pair = closest_pair(right)
 
-	(l_a, l_b, min_dist_l) = closest_pair(left)
-	(r_a, r_b, min_dist_r) = closest_pair(right)
-
-	(min_a, min_b, min_dist) = (l_a, l_b, min_dist_l) if min_dist_l < min_dist_r else (r_a, r_b, min_dist_r)
+	min_pair = smallest_pair(left_pair, right_pair)
 	
 	line_x = (left[-1].x + right[0].x) / 2.0
-	delta = min_dist
+	delta = min_pair.dist
 	candidates = sorted(filter(lambda p: p.x > line_x - delta and p.x < line_x + delta, points), key=lambda p: p.y)
 
-	for i, point in enumerate(candidates):
-		if(i+1 == len(candidates)):
-			break
+	for i, point in enumerate(candidates[:-1]): #skip the last candidate in outer loop. We have compared it to everything already
 		next_11 = candidates[i+1:min(len(candidates), i+11)]
-		(dist, (a, b)) = sorted([(x.distance(point), (x, point)) for x in next_11])[0]
-		if(dist < min_dist):
-			min_dist = dist
-			min_a = a
-			min_b = b
+		for pair in [Pair(x, point, x.distance(point)) for x in next_11]:
+			min_pair = smallest_pair(pair, min_pair)
+			
+	return min_pair
 
-	return (min_a, min_b, min_dist)
-	
-	#print min_dist
-	#print line_x
-	#print candidates
-
-points = parse_data()
-print closest_pair(points)
-
-
-
-a = Point(8.0,0, "a")
-b = Point(3.0,0, "b")
-c = Point(6.0,0, "c")
-d = Point(11.0,0, "d")
-#print closest_pair(sorted([a,b,c,d], key=lambda p: p.x))
-
-
+print closest_pair(parse_data())
