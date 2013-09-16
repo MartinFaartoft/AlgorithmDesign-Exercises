@@ -31,6 +31,9 @@ def parse_data():
 	data = sys.stdin.read().splitlines()[6:-1]
 	points = []
 	for x in data:
+		print x
+		if "EOF" in x:
+			continue
 		
 		x = x.split()
 		a = x[0]
