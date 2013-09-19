@@ -43,7 +43,7 @@ def parse_data():
         b = float(x[1])
         c = float(x[2])
         points.append(Point(b, c, a))
-    return sorted(points, key=lambda p: p.x)
+    return (sorted(points, key=lambda p: p.x), sorted(points, key=lambda p: p.y))
 
 def brute_force(points):
     min_pair = Pair(None, None, float('inf'))
@@ -55,28 +55,42 @@ def brute_force(points):
                 min_pair = Pair(point_a, point_b, dist)
     return min_pair
 
-def closest_pair(points):
-    if len(points) < 4:
-        return brute_force(points)
+def make_points_y(points_x, points_y):
+    lookup = {}
+    for p in points_x:
+        lookup[p.id] = p
 
-    mid_index = len(points) / 2
-    left = points[:mid_index]
-    right = points[mid_index:]
+    new_points_y = []
+    for p in points_y:
+        if p.id in lookup:
+            new_points_y.append(p)
 
-    left_pair = closest_pair(left)
-    right_pair = closest_pair(right)
+    return new_points_y
+
+def closest_pair(points_x, points_y):
+    if len(points_x) < 4:
+        return brute_force(points_x)
+
+    mid_index = len(points_x) / 2
+    left = points_x[:mid_index]
+    right = points_x[mid_index:]
+
+    left_pair = closest_pair(left, make_points_y(left, points_y))
+    right_pair = closest_pair(right, make_points_y(right, points_y))
 
     min_pair = smallest_pair(left_pair, right_pair)
 
     line_x = (left[-1].x + right[0].x) / 2.0
     delta = min_pair.dist
-    candidates = sorted(filter(lambda p: p.x > line_x - delta and p.x < line_x + delta, points), key=lambda p: p.y)
+    candidates = filter(lambda p: p.x > line_x - delta and p.x < line_x + delta, points_y)
 
     for i, point in enumerate(candidates[:-1]): #skip the last candidate in outer loop. We have compared it to everything already
-        next_11 = candidates[i+1:min(len(candidates), i+11)]
-        for pair in [Pair(x, point, x.distance(point)) for x in next_11]:
+        next_6 = candidates[i+1:min(len(candidates), i+6)]
+        for pair in [Pair(x, point, x.distance(point)) for x in next_6]:
             min_pair = smallest_pair(pair, min_pair)
 
     return min_pair
 
-print closest_pair(parse_data())
+px, py = parse_data()
+
+print closest_pair(px, py)
