@@ -85,8 +85,8 @@ def closest_pair(points_x, points_y):
     candidates = filter(lambda p: p.x > line_x - delta and p.x < line_x + delta, points_y)
 
     for i, point in enumerate(candidates[:-1]): #skip the last candidate in outer loop. We have compared it to everything already
-        next_11 = candidates[i+1:min(len(candidates), i+11)]
-        for pair in [Pair(x, point, x.distance(point)) for x in next_11]:
+        next_6 = candidates[i+1:min(len(candidates), i+6)]
+        for pair in [Pair(x, point, x.distance(point)) for x in next_6]:
             min_pair = smallest_pair(pair, min_pair)
 
     return min_pair
