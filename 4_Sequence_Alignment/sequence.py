@@ -2,7 +2,7 @@ import sys, itertools
 
 
 
-def sequence_alignment(a,b,a_new, b_new):
+def sequence_alignment(a,b):
 	m = len(a)
 	n = len(b)
 
@@ -10,14 +10,13 @@ def sequence_alignment(a,b,a_new, b_new):
 		return M[(m,n)]
 	
 	if m == 0:
-		cost = n * 6000  # TODO USE BLOSUM DATA
-		str_a = 
+		result = n * delta  # TODO USE BLOSUM DATA
 	elif n == 0:
-		result = n * 6000  # TODO USE BLOSUM DATA
+		result = n * delta  # TODO USE BLOSUM DATA
 	else:
-		result = min([ 6000 + sequence_alignment(a[:-1], b[:-1]),
-					   6000 + sequence_alignment(a[:-1], b),
-					   6000 + sequence_alignment(a, b[:-1])
+		result = max([ blosum[a[-1]][b[-1]] + sequence_alignment(a[:-1], b[:-1]),
+					   delta + sequence_alignment(a[:-1], b),
+					   delta + sequence_alignment(a, b[:-1])
 			]) # TODO USE BLOSUM DATA 
 
 	M[(m,n)] = result
@@ -60,10 +59,12 @@ def parse_data():
 
 
 blosum = parse_blosum()
+delta = blosum['A']['*']
 seq_data = parse_data()
 
 for ((a_id,a_seq),(b_id, b_seq)) in itertools.combinations(seq_data, 2):
 	M = {}
-	cost sequence_alignment(a_seq, b_seq)
+	print a_id, b_id
+	print sequence_alignment(a_seq, b_seq)
 
 
