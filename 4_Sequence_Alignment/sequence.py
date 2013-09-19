@@ -1,8 +1,8 @@
-import sys
+import sys, itertools
 
-M = {}
 
-def sequence_alignment(a,b):
+
+def sequence_alignment(a,b,a_new, b_new):
 	m = len(a)
 	n = len(b)
 
@@ -10,7 +10,8 @@ def sequence_alignment(a,b):
 		return M[(m,n)]
 	
 	if m == 0:
-		result = n * 6000  # TODO USE BLOSUM DATA
+		cost = n * 6000  # TODO USE BLOSUM DATA
+		str_a = 
 	elif n == 0:
 		result = n * 6000  # TODO USE BLOSUM DATA
 	else:
@@ -57,6 +58,12 @@ def parse_data():
 	seq_data.append((name,seq))
 	return seq_data
 
-parse_blosum()
+
+blosum = parse_blosum()
 seq_data = parse_data()
+
+for ((a_id,a_seq),(b_id, b_seq)) in itertools.combinations(seq_data, 2):
+	M = {}
+	cost sequence_alignment(a_seq, b_seq)
+
 
