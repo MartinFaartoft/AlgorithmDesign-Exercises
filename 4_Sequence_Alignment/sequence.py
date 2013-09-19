@@ -7,20 +7,20 @@ def sequence_alignment(a,b):
 	n = len(b)
 
 	if (m,n) in M:
-		return M[(m,n)]
+		return M[(m,n)][0]
 	
 	if m == 0:
-		result = n * delta  # TODO USE BLOSUM DATA
+		result = (n * delta, 'base_m')
 	elif n == 0:
-		result = n * delta  # TODO USE BLOSUM DATA
+		result = (m * delta, 'base_n')
 	else:
-		result = max([ blosum[a[-1]][b[-1]] + sequence_alignment(a[:-1], b[:-1]),
-					   delta + sequence_alignment(a[:-1], b),
-					   delta + sequence_alignment(a, b[:-1])
-			]) # TODO USE BLOSUM DATA 
+		result = max([ (blosum[a[-1]][b[-1]] + sequence_alignment(a[:-1], b[:-1]), 'match'),
+					   (delta + sequence_alignment(a[:-1], b), 'sep_a'),
+					   (delta + sequence_alignment(a, b[:-1]), 'sep_b')
+			])
 
 	M[(m,n)] = result
-	return result
+	return result[0]
 	
 
 def parse_blosum():
@@ -66,5 +66,14 @@ for ((a_id,a_seq),(b_id, b_seq)) in itertools.combinations(seq_data, 2):
 	M = {}
 	print a_id, b_id
 	print sequence_alignment(a_seq, b_seq)
+	if a_id == 'Sphinx' and b_id == 'Bandersnatch':
+		for key in M.keys():
+			print key, M[key]
+	
+	#print M[ (len(a_seq), len(b_seq)) ]
 
 
+def traverse(mem, a_seq, b_seq):
+	#get the action from current step
+
+	return traverse( action(a_seq, b_seq) )
