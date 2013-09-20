@@ -6,8 +6,8 @@ def sequence_alignment(a,b):
     m = len(a)
     n = len(b)
 
-    if (m,n) in M:
-        return M[(m,n)][0]
+    if (m, n) in M:
+        return M[(m, n)][0]
 
     if m == 0:
         result = (n * delta, 'base_m')
@@ -20,6 +20,7 @@ def sequence_alignment(a,b):
             ])
 
     M[(m,n)] = result
+
     return result[0]
 
 
@@ -60,31 +61,39 @@ def parse_data():
 
 def traverse(mem, a_seq, b_seq):
 
-    len_a = len(a_seq)
-    len_b = len(b_seq)
-    if len_a == 0 and len_b == 0:
-        return "", ""
+    new_a = ""
+    new_b = ""
 
-    action = mem[(len_a, len_b)][1]
+    while len(a_seq) != 0 or len(b_seq) != 0:
+        len_a = len(a_seq)
+        len_b = len(b_seq)
 
-    if action == "match":
-        currentA = a_seq[-1]
-        currentB = b_seq[-1]
-        previous = traverse(mem, a_seq[:-1], b_seq[:-1])
-    elif action == "sep_a":
-        currentA = a_seq[-1]
-        currentB = "-"
-        previous = traverse(mem, a_seq[:-1], b_seq)
-    else:
-        currentA = "-"
-        currentB = b_seq[-1]
-        previous = traverse(mem, a_seq, b_seq[:-1])
+        action = mem[(len_a, len_b)][1]
 
-    (prev_a, prev_b) = previous
+        if action == "match":
+            new_a = (a_seq[-1] if len_a != 0 else "") + new_a
+            new_b = (b_seq[-1] if len_b != 0 else "") + new_b
+            a_seq = a_seq[:-1]
+            b_seq = b_seq[:-1]
+        elif action == "sep_a":
+            new_a = (a_seq[-1] if len_a != 0 else "") + new_a
+            new_b = "-" + new_b
+            a_seq = a_seq[:-1]
+        elif action == "sep_b":
+            new_a = "-" + new_a
+            new_b = (b_seq[-1] if len_b != 0 else "") + new_b
+            b_seq = b_seq[:-1]
+        elif action == "base_m":
+            new_a = (len_b * "-") + new_a
+            new_b = b_seq + new_b
+            b_seq = []
+        else:
+            new_a = a_seq + new_a
+            new_b = (len_a * "-") + new_b
+            a_seq = []
 
-    now = ((prev_a + currentA), (prev_b + currentB))
 
-    return now
+    return (new_a, new_b)
 
 blosum = parse_blosum()
 delta = blosum['A']['*']
@@ -93,7 +102,7 @@ seq_data = parse_data()
 for ((a_id,a_seq),(b_id, b_seq)) in itertools.combinations(seq_data, 2):
     M = {}
     cost = sequence_alignment(a_seq, b_seq)
-    print a_id, "(", a_seq, ")",  "--", b_id, "(", b_seq, ")", ":", cost
+    print a_id,  "--", b_id, ":", cost
     (currentA, currentB) = traverse(M, a_seq, b_seq)
     print currentA
     print currentB
