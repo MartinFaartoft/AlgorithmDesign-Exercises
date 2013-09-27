@@ -21,7 +21,7 @@ class Edge:
 			self.opposite = opposite
 
 	def __repr__(self):
-		return str(self.start.id) + " -- " + str(self.flow) + " -> " + str(self.end.id)
+		return str(self.start.id) + " --" + str(self.flow) + "/" + str(self.capacity) + "-> " + str(self.end.id)
 
 	def add_flow(self, flow):
 		self.flow += flow
@@ -44,9 +44,9 @@ def max_flow(edge_dict, source, sink): #map<start_vertex, list<edge>>
 	#find all edges starting in path, not ending in path, and sum their initial_capacity - that's the max-flow
 
 def augment(edge_dict, path):
-	min_flow = min(path, key=lambda x: x.remaining_capacity())
+	min_flow = min(path, key=lambda x: x.remaining_capacity()).remaining_capacity()
 	for edge in path:
-		edge.add_flow(min_flow.remaining_capacity())
+		edge.add_flow(min_flow)
 
 def bfs(source, sink, edge_dict):
 	explored_vertices = {}
@@ -109,31 +109,36 @@ def parse_data():
 
 def print_solution(edge_dict, cut):
 	cap = 0
+	bottleneck = []
 	vertices = cut.values()
 	for vertex in vertices:
 		edges = edge_dict[vertex.id]
 		for edge in edges:
-			if edge.start in vertices:
+			if edge.start in vertices and not edge.end in vertices:
 				if edge.capacity == (float("inf")):
-					break
+					raise ValueError('TO INFINITY AND BEYOOOOOOOOND')
 				cap += edge.capacity
-	print cap
+				bottleneck.append(edge)
+	print "Max flow:\n" + str(cap)
+	print "bottleneck edges: (start --flow/cap-> end)"
+	for edge in bottleneck:
+		print str(edge)
 
 
 
 v1 = Vertex(1)
 v2 = Vertex(2)
-#v3 = Vertex(3)
+v3 = Vertex(3)
 
 e1 = Edge(v1, v2, 10)
-#e2 = Edge(v2, v3, 10)
+e2 = Edge(v2, v3, 5)
 
 edge_dict = {}
 edge_dict[v1.id] = [e1]
-edge_dict[v2.id] = [e1.opposite]
-#edge_dict[v3.id] = [e2.opposite]
+edge_dict[v2.id] = [e1.opposite, e2]
+edge_dict[v3.id] = [e2.opposite]
 
-#max_flow(edge_dict, v1, v2)
+#cut = max_flow(edge_dict, v1, v3)
 (source, sink, edge_dict) = parse_data()
 cut = max_flow(edge_dict,source,sink)
 print_solution(edge_dict, cut)
