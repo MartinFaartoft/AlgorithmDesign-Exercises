@@ -1,10 +1,8 @@
-import Queue
-import sys
+import Queue, sys
 
 class Vertex:
 	def __init__(self, id):
 		self.id = id
-
 
 class Edge:
 	def __init__(self, start, end, capacity, opposite=None):
@@ -31,17 +29,14 @@ class Edge:
 		return self.capacity - self.flow
 
 
-
-def max_flow(edge_dict, source, sink): #map<start_vertex, list<edge>>
+def max_flow(edge_dict, source, sink):
 	while(True):
-		found_path, path, explored_vertices = bfs(source, sink, edge_dict)
-		if not found_path: 
+		path, explored = bfs(source, sink, edge_dict)
+		if len(path) == 0: 
 			break
-
 		augment(edge_dict, path)
-	min_cut = explored_vertices
-	return min_cut
-	#find all edges starting in path, not ending in path, and sum their initial_capacity - that's the max-flow
+
+	return explored
 
 def augment(edge_dict, path):
 	min_flow = min(path, key=lambda x: x.remaining_capacity()).remaining_capacity()
@@ -49,27 +44,28 @@ def augment(edge_dict, path):
 		edge.add_flow(min_flow)
 
 def bfs(source, sink, edge_dict):
-	explored_vertices = {}
-
+	explored = {}
 	frontier = Queue.Queue()
 	frontier.put(source)
+
 	while not frontier.empty():
 		vertex = frontier.get()
-		explored_vertices[vertex.id] = vertex
+		explored[vertex.id] = vertex
 		for edge in edge_dict[vertex.id]:
-			if edge.remaining_capacity() == 0 or edge.end.id in explored_vertices:
+			if edge.remaining_capacity() == 0 or edge.end.id in explored:
 				continue
+			
 			if edge.end.id == sink.id:
 				edge.end.incoming_edge = edge
-				return (True, make_path(source, sink, explored_vertices), explored_vertices)
+				return (make_path(source, sink, explored), explored)
+			
 			end_vertex = edge.end
 			end_vertex.incoming_edge = edge
 			frontier.put(end_vertex)
-	return (False, [], explored_vertices)
-	#do breadth first search, and IGNORE all edges with remaining_capacity == 0, treat them as non-existing
-	#return tuple (bool, list of edges in path, list of vertices explored)
-
-def make_path(source, sink, explored_vertices):
+	#no path found, return empty path list
+	return ([], explored)
+	
+def make_path(source, sink, explored):
 	path = []
 	vertex = sink
 	while vertex.id != source.id:
@@ -77,6 +73,17 @@ def make_path(source, sink, explored_vertices):
 		vertex = vertex.incoming_edge.start
 
 	return path
+
+def print_solution(edge_dict, cut):
+	bottleneck = []
+	v = cut.values()
+	for vertex in v:
+		bottleneck += filter(lambda e: e.start in v and not e.end in v, edge_dict[vertex.id])
+
+	print "Max flow:\n" + str(sum(map(lambda e: e.flow, bottleneck)))
+	print "bottleneck edges: (start --flow/cap-> end)"
+	for edge in bottleneck:
+		print str(edge)
 
 def parse_data():
 	data = sys.stdin.read().splitlines()
@@ -107,39 +114,7 @@ def parse_data():
 		edge_dict[v2] = edges
 	return (vertices[0], vertices[num_vertices-1], edge_dict)
 
-def print_solution(edge_dict, cut):
-	cap = 0
-	bottleneck = []
-	vertices = cut.values()
-	for vertex in vertices:
-		edges = edge_dict[vertex.id]
-		for edge in edges:
-			if edge.start in vertices and not edge.end in vertices:
-				if edge.capacity == (float("inf")):
-					raise ValueError('TO INFINITY AND BEYOOOOOOOOND')
-				cap += edge.capacity
-				bottleneck.append(edge)
-	print "Max flow:\n" + str(cap)
-	print "bottleneck edges: (start --flow/cap-> end)"
-	for edge in bottleneck:
-		print str(edge)
 
-
-
-v1 = Vertex(1)
-v2 = Vertex(2)
-v3 = Vertex(3)
-
-e1 = Edge(v1, v2, 10)
-e2 = Edge(v2, v3, 5)
-
-edge_dict = {}
-edge_dict[v1.id] = [e1]
-edge_dict[v2.id] = [e1.opposite, e2]
-edge_dict[v3.id] = [e2.opposite]
-
-#cut = max_flow(edge_dict, v1, v3)
-(source, sink, edge_dict) = parse_data()
+source, sink, edge_dict = parse_data()
 cut = max_flow(edge_dict,source,sink)
 print_solution(edge_dict, cut)
-
