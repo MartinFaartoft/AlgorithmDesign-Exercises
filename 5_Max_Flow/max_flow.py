@@ -1,4 +1,5 @@
 import Queue
+import sys
 
 class Vertex:
 	def __init__(self, id):
@@ -28,6 +29,7 @@ class Edge:
 
 	def remaining_capacity(self):
 		return self.capacity - self.flow
+
 
 
 def max_flow(edge_dict, source, sink): #map<start_vertex, list<edge>>
@@ -76,6 +78,34 @@ def make_path(source, sink, explored_vertices):
 
 	return path
 
+def parse_data():
+	data = sys.stdin.read().splitlines()
+	num_vertices = int(data[0])
+	vertices = {}
+	for i in xrange(num_vertices):
+		name = data[i+1]
+		vertices[i] = Vertex(i)
+	num_edges = int(data[num_vertices + 1 ])
+	edge_dict = {}
+	for i in xrange(num_edges):
+		edge_dict[i] = [] 
+	for i in xrange(num_edges):
+		line = map(lambda x: int(x) , data[i + num_vertices + 2].split())
+		v1 = vertices[line[0]]
+		v2 = vertices[line[1]]
+		cap = line[2]
+		if (cap == -1):
+			cap = float("inf")
+		edge = Edge(v1, v2, cap)
+
+		edges = edge_dict[v1.id]
+		edges.append(edge)
+		edge_dict[v1] = edges
+
+		edges = edge_dict[v2.id]
+		edges.append(edge.opposite)
+		edge_dict[v2] = edges
+	return (vertices[0], vertices[num_vertices-1], edge_dict)
 
 v1 = Vertex(1)
 v2 = Vertex(2)
@@ -89,4 +119,6 @@ edge_dict[v1.id] = [e1]
 edge_dict[v2.id] = [e1.opposite]
 #edge_dict[v3.id] = [e2.opposite]
 
-max_flow(edge_dict, v1, v2)
+#max_flow(edge_dict, v1, v2)
+(source, sink, edge_dict) = parse_data()
+max_flow(edge_dict,source,sink)
