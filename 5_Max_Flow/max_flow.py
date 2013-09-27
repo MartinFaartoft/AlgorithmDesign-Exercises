@@ -40,7 +40,7 @@ def max_flow(edge_dict, source, sink): #map<start_vertex, list<edge>>
 
 		augment(edge_dict, path)
 	min_cut = explored_vertices
-	print min_cut
+	return min_cut
 	#find all edges starting in path, not ending in path, and sum their initial_capacity - that's the max-flow
 
 def augment(edge_dict, path):
@@ -107,6 +107,20 @@ def parse_data():
 		edge_dict[v2] = edges
 	return (vertices[0], vertices[num_vertices-1], edge_dict)
 
+def print_solution(edge_dict, cut):
+	cap = 0
+	vertices = cut.values()
+	for vertex in vertices:
+		edges = edge_dict[vertex.id]
+		for edge in edges:
+			if edge.start in vertices:
+				if edge.capacity == (float("inf")):
+					break
+				cap += edge.capacity
+	print cap
+
+
+
 v1 = Vertex(1)
 v2 = Vertex(2)
 #v3 = Vertex(3)
@@ -121,4 +135,6 @@ edge_dict[v2.id] = [e1.opposite]
 
 #max_flow(edge_dict, v1, v2)
 (source, sink, edge_dict) = parse_data()
-max_flow(edge_dict,source,sink)
+cut = max_flow(edge_dict,source,sink)
+print_solution(edge_dict, cut)
+
